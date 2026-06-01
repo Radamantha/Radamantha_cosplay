@@ -1,0 +1,225 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Carte Interactive</title>
+
+<style>
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#0b0b0b;
+  overflow:hidden;
+  perspective:1200px;
+}
+
+/* CARTE */
+.card{
+  width:min(85vw,420px);
+  aspect-ratio:340/440;
+  position:relative;
+  border-radius:22px;
+  overflow:hidden;
+  transform-style:preserve-3d;
+}
+
+/* PHOTO UNIQUEMENT */
+.card-photo{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+/* SIGNATURE */
+.card-signature{
+  position:absolute;
+  top:300px;
+  left:50%;
+  transform:translateX(-50%);
+  width:auto;
+  height:auto;
+  max-width:300px;
+  object-fit:contain;
+  z-index:20;
+  pointer-events:none;
+  filter:drop-shadow(0 10px 14px rgba(0,0,0,0.75));
+  will-change:transform;
+}
+
+/* FOIL */
+.foil{
+  position:absolute;
+  inset:0;
+  mix-blend-mode:screen;
+  pointer-events:none;
+  z-index:5;
+}
+
+.foil::before{
+  content:"";
+  position:absolute;
+  width:130%;
+  height:28%;
+  top:-30%;
+  left:-15%;
+  transform:rotate(-25deg);
+
+background:linear-gradient(
+  135deg,
+  transparent,
+  rgba(255,220,80,0.15),
+  rgba(255,235,120,0.55),
+  rgba(255,215,0,0.8),
+  rgba(255,240,170,0.9),
+  rgba(255,215,0,0.8),
+  rgba(255,235,120,0.55),
+  transparent
+);
+
+  filter:blur(1px) saturate(1.6);
+  animation:sweep 5s ease-in-out infinite;
+}
+
+@keyframes sweep{
+  0%{top:-50%;opacity:0}
+  25%{opacity:1}
+  100%{top:120%;opacity:0}
+}
+
+/* SPARKLES BLANCS */
+.sparkle{
+  position:absolute;
+  width:2px;
+  height:2px;
+  background:white;
+  border-radius:50%;
+  box-shadow:0 0 8px rgba(255,255,255,0.9);
+  animation:spark 2.5s linear;
+  z-index:6;
+  pointer-events:none;
+}
+
+/* SPARKLES DORÉS (AJOUT) */
+.sparkle-gold{
+  position:absolute;
+  width:4px;
+  height:4px;
+  background: radial-gradient(circle, #fff3b0, #ffd86b, #caa200);
+  border-radius:50%;
+  box-shadow:0 0 10px rgba(255,215,0,0.9);
+  animation:spark 3s linear;
+  z-index:6;
+  pointer-events:none;
+}
+
+@keyframes spark{
+  0%{
+    opacity:0;
+    transform:scale(0);
+  }
+  40%{
+    opacity:1;
+    transform:scale(1.4);
+  }
+  100%{
+    opacity:0;
+    transform:scale(0);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="card" id="card">
+
+  <img class="card-photo" src="photo.jpg">
+  <img class="card-signature" src="signature.png">
+  <div class="foil"></div>
+
+</div>
+
+<script>
+const card = document.getElementById("card");
+const signature = document.querySelector(".card-signature");
+
+let targetX = 0;
+let targetY = 0;
+
+let currentX = 0;
+let currentY = 0;
+
+document.addEventListener("mousemove",(e)=>{
+
+  const x = (e.clientX / window.innerWidth) - 0.5;
+  const y = (e.clientY / window.innerHeight) - 0.5;
+
+  targetY = x * 25;
+  targetX = -y * 25;
+
+});
+
+function animate(){
+
+  currentX += (targetX - currentX) * 0.08;
+  currentY += (targetY - currentY) * 0.08;
+
+  card.style.transform =
+    `rotateX(${currentX}deg) rotateY(${currentY}deg)`;
+
+  signature.style.transform =
+    `translateX(-50%)
+     translateY(${currentY * 0.15}px)
+     rotate(${currentY * 0.15}deg)`;
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+
+/* SPARKLES BLANCS */
+function sparkle(){
+
+  const s = document.createElement("div");
+
+  s.className = "sparkle";
+
+  s.style.left = Math.random()*100 + "%";
+  s.style.top  = Math.random()*100 + "%";
+
+  card.appendChild(s);
+
+  setTimeout(()=>{
+    s.remove();
+  },2500);
+
+}
+
+/* SPARKLES DORÉS (AJOUTÉ ICI, SANS TOUCHER AU RESTE) */
+function goldSparkle(){
+
+  const s = document.createElement("div");
+
+  s.className = "sparkle-gold";
+
+  s.style.left = Math.random()*100 + "%";
+  s.style.top  = Math.random()*100 + "%";
+
+  card.appendChild(s);
+
+  setTimeout(()=>{
+    s.remove();
+  },3000);
+}
+
+setInterval(sparkle,60);
+setInterval(goldSparkle,220);
+
+</script>
+
+</body>
+</html>
