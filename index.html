@@ -2,124 +2,152 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Carte Interactive</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Carte Interactive 3D</title>
 <style>
-body{
-  margin:0;
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:#0b0b0b;
-  overflow:hidden;
-  perspective:1200px;
-}
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #0b0b0b;
+    overflow: hidden;
+    perspective: 1200px;
+    touch-action: none; /* Désactive le scroll accidentel */
+  }
 
-/* CARTE */
-.card{
-  width:min(85vw,420px);
-  aspect-ratio:340/440;
-  position:relative;
-  border-radius:22px;
-  overflow:hidden;
-  transform-style:preserve-3d;
-}
+  /* CARTE */
+  .card {
+    width: min(90vw, 420px);
+    aspect-ratio: 340/440;
+    position: relative;
+    border-radius: 22px;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transition: transform 0.1s ease-out; /* Fluidité */
+    box-shadow: 0 20px 40px rgba(255, 215, 0, 0.2); /* Lueur dorée subtile */
+  }
 
-/* PHOTO */
-.card-photo{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
+  /* PHOTO */
+  .card-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
 
-/* SIGNATURE */
-.card-signature{
-  position:absolute;
-  top:300px;
-  left:50%;
-  transform:translateX(-50%);
-  max-width:300px;
-  z-index:20;
-  pointer-events:none;
-  filter:drop-shadow(0 10px 14px rgba(0,0,0,0.75));
-  will-change:transform;
-}
+  /* SIGNATURE */
+  .card-signature {
+    position: absolute;
+    top: 300px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 300px;
+    z-index: 20;
+    pointer-events: none;
+    filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.75));
+    will-change: transform;
+  }
 
-/* FOIL */
-.foil{
-  position:absolute;
-  inset:0;
-  mix-blend-mode:screen;
-  pointer-events:none;
-  z-index:5;
-}
+  /* FOIL (effet métallique) */
+  .foil {
+    position: absolute;
+    inset: 0;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 5;
+  }
 
-.foil::before{
-  content:"";
-  position:absolute;
-  width:130%;
-  height:28%;
-  top:-30%;
-  left:-15%;
-  transform:rotate(-25deg);
+  .foil::before {
+    content: "";
+    position: absolute;
+    width: 130%;
+    height: 28%;
+    top: -30%;
+    left: -15%;
+    transform: rotate(-25deg);
+    background: linear-gradient(
+      135deg,
+      transparent,
+      rgba(255, 220, 80, 0.15),
+      rgba(255, 235, 120, 0.55),
+      rgba(255, 215, 0, 0.8),
+      rgba(255, 240, 170, 0.9),
+      rgba(255, 215, 0, 0.8),
+      rgba(255, 235, 120, 0.55),
+      transparent
+    );
+    filter: blur(1px) saturate(1.6);
+    animation: sweep 5s ease-in-out infinite;
+  }
 
-  background:linear-gradient(
-    135deg,
-    transparent,
-    rgba(255,220,80,0.15),
-    rgba(255,235,120,0.55),
-    rgba(255,215,0,0.8),
-    rgba(255,240,170,0.9),
-    rgba(255,215,0,0.8),
-    rgba(255,235,120,0.55),
-    transparent
-  );
+  @keyframes sweep {
+    0% { top: -50%; opacity: 0; }
+    25% { opacity: 1; }
+    100% { top: 120%; opacity: 0; }
+  }
 
-  filter:blur(1px) saturate(1.6);
-  animation:sweep 5s ease-in-out infinite;
-}
+  /* SPARKLES (pétilles) */
+  .sparkle, .sparkle-gold {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 6;
+  }
 
-@keyframes sweep{
-  0%{top:-50%;opacity:0}
-  25%{opacity:1}
-  100%{top:120%;opacity:0}
-}
+  .sparkle {
+    width: 2px;
+    height: 2px;
+    background: white;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+    animation: spark 2.5s linear;
+  }
 
-/* SPARKLES */
-.sparkle,
-.sparkle-gold{
-  position:absolute;
-  border-radius:50%;
-  pointer-events:none;
-  z-index:6;
-}
+  .sparkle-gold {
+    width: 4px;
+    height: 4px;
+    background: radial-gradient(circle, #fff3b0, #ffd86b, #caa200);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.9);
+    animation: spark 3s linear;
+  }
 
-.sparkle{
-  width:2px;
-  height:2px;
-  background:white;
-  box-shadow:0 0 8px rgba(255,255,255,0.9);
-  animation:spark 2.5s linear;
-}
+  @keyframes spark {
+    0% { opacity: 0; transform: scale(0); }
+    40% { opacity: 1; transform: scale(1.4); }
+    100% { opacity: 0; transform: scale(0); }
+  }
 
-.sparkle-gold{
-  width:4px;
-  height:4px;
-  background: radial-gradient(circle, #fff3b0, #ffd86b, #caa200);
-  box-shadow:0 0 10px rgba(255,215,0,0.9);
-  animation:spark 3s linear;
-}
+  /* INDICATEUR GYROSCOPE (si inactif) */
+  .gyro-hint {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 100;
+  }
 
-@keyframes spark{
-  0%{opacity:0;transform:scale(0)}
-  40%{opacity:1;transform:scale(1.4)}
-  100%{opacity:0;transform:scale(0)}
-}
+  .gyro-hint.active {
+    opacity: 1;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.05); }
+    100% { transform: translateX(-50%) scale(1); }
+  }
 </style>
 </head>
-
 <body>
 
 <div class="card" id="card">
@@ -128,115 +156,144 @@ body{
   <div class="foil"></div>
 </div>
 
+<div class="gyro-hint" id="gyroHint">📱 Bougez votre téléphone pour activer l'effet 3D</div>
+
 <script>
-const card = document.getElementById("card");
-const signature = document.querySelector(".card-signature");
+  const card = document.getElementById("card");
+  const signature = document.querySelector(".card-signature");
+  const gyroHint = document.getElementById("gyroHint");
 
-let targetX = 0;
-let targetY = 0;
-let currentX = 0;
-let currentY = 0;
+  // Variables pour le gyroscope
+  let targetX = 0;
+  let targetY = 0;
+  let currentX = 0;
+  let currentY = 0;
+  let isGyroActive = false;
+  let gyroTimeout = null;
 
-/* =========================
-   DESKTOP MOUSE CONTROL
-========================= */
-document.addEventListener("mousemove", (e) => {
-  const x = (e.clientX / window.innerWidth) - 0.5;
-  const y = (e.clientY / window.innerHeight) - 0.5;
+  // Calibrage automatique (moyenne des premiers valeurs)
+  let calibrateBeta = 0;
+  let calibrateGamma = 0;
+  let calibrationCount = 0;
+  const CALIBRATION_SAMPLES = 10;
 
-  targetY = x * 25;
-  targetX = -y * 25;
-});
+  // Sensibilité (à ajuster selon tes préférences)
+  const SENSITIVITY = 40; // 25 → 40 (plus réactif)
+  const MAX_ROTATION = 30; // Limite la rotation à ±30°
 
-/* =========================
-   MOBILE TOUCH CONTROL
-========================= */
-document.addEventListener("touchmove", (e) => {
-  const t = e.touches[0];
+  /* =========================
+     GYROSCOPE (MOBILE) - OPTIMISÉ
+  ========================= */
+  window.addEventListener("deviceorientation", (e) => {
+    if (e.beta == null || e.gamma == null) return;
 
-  const x = (t.clientX / window.innerWidth) - 0.5;
-  const y = (t.clientY / window.innerHeight) - 0.5;
-
-  targetY = x * 25;
-  targetX = -y * 25;
-}, { passive:true });
-
-/* =========================
-   GYROSCOPE (MOBILE)
-========================= */
-window.addEventListener("deviceorientation", (e) => {
-  if (e.beta == null || e.gamma == null) return;
-
-  const x = (e.beta - 45) / 45;
-  const y = e.gamma / 45;
-
-  targetX = x * 25;
-  targetY = y * 25;
-});
-
-/* =========================
-   iOS PERMISSION FIX
-========================= */
-if (typeof DeviceOrientationEvent !== "undefined" &&
-    typeof DeviceOrientationEvent.requestPermission === "function") {
-
-  document.body.addEventListener("click", async () => {
-    try {
-      const res = await DeviceOrientationEvent.requestPermission();
-      if (res === "granted") {
-        console.log("Gyroscope activé");
+    // Calibrage automatique (ignorer les 10 premières valeurs)
+    if (calibrationCount < CALIBRATION_SAMPLES) {
+      calibrateBeta += e.beta;
+      calibrateGamma += e.gamma;
+      calibrationCount++;
+      if (calibrationCount === CALIBRATION_SAMPLES) {
+        calibrateBeta /= CALIBRATION_SAMPLES;
+        calibrateGamma /= CALIBRATION_SAMPLES;
       }
-    } catch (e) {}
-  }, { once:true });
+      return;
+    }
 
-}
+    // Correction des axes (beta = avant/arrière, gamma = gauche/droite)
+    const beta = e.beta - calibrateBeta;  // Inclinaison avant/arrière
+    const gamma = e.gamma - calibrateGamma; // Inclinaison gauche/droite
 
-/* =========================
-   ANIMATION LOOP
-========================= */
-function animate(){
+    // Normalisation et limitation
+    targetX = Math.max(-MAX_ROTATION, Math.min(MAX_ROTATION, (beta / 45) * SENSITIVITY));
+    targetY = Math.max(-MAX_ROTATION, Math.min(MAX_ROTATION, (gamma / 45) * SENSITIVITY));
 
-  currentX += (targetX - currentX) * 0.08;
-  currentY += (targetY - currentY) * 0.08;
+    isGyroActive = true;
+    clearTimeout(gyroTimeout);
+    gyroHint.classList.remove("active");
 
-  card.style.transform =
-    `rotateX(${currentX}deg) rotateY(${currentY}deg)`;
+    // Réinitialise le timeout pour afficher le hint après 3s d'inactivité
+    gyroTimeout = setTimeout(() => {
+      if (isGyroActive) {
+        gyroHint.classList.add("active");
+        isGyroActive = false;
+      }
+    }, 3000);
+  });
 
-  signature.style.transform =
-    `translateX(-50%)
-     translateY(${currentY * 0.15}px)
-     rotate(${currentY * 0.15}deg)`;
+  /* =========================
+     iOS PERMISSION FIX
+  ========================= */
+  if (typeof DeviceOrientationEvent !== "undefined" &&
+      typeof DeviceOrientationEvent.requestPermission === "function") {
+    document.body.addEventListener("click", async () => {
+      try {
+        const res = await DeviceOrientationEvent.requestPermission();
+        if (res === "granted") {
+          window.location.reload(); // Recharge pour activer le gyroscope
+        }
+      } catch (e) {
+        console.error("Erreur permission gyroscope:", e);
+      }
+    }, { once: true });
+  }
 
-  requestAnimationFrame(animate);
-}
+  /* =========================
+     MOUVEMENTS TACTILES (FALLBACK)
+  ========================= */
+  document.addEventListener("touchmove", (e) => {
+    const t = e.touches[0];
+    const x = (t.clientX / window.innerWidth) - 0.5;
+    const y = (t.clientY / window.innerHeight) - 0.5;
+    targetY = x * SENSITIVITY * 0.8;
+    targetX = -y * SENSITIVITY * 0.8;
+    gyroHint.classList.remove("active");
+  }, { passive: true });
 
-animate();
+  document.addEventListener("mousemove", (e) => {
+    const x = (e.clientX / window.innerWidth) - 0.5;
+    const y = (e.clientY / window.innerHeight) - 0.5;
+    targetY = x * SENSITIVITY * 0.8;
+    targetX = -y * SENSITIVITY * 0.8;
+  });
 
-/* =========================
-   SPARKLES
-========================= */
-function sparkle(){
-  const s = document.createElement("div");
-  s.className = "sparkle";
-  s.style.left = Math.random()*100 + "%";
-  s.style.top  = Math.random()*100 + "%";
-  card.appendChild(s);
-  setTimeout(()=>s.remove(),2500);
-}
+  /* =========================
+     ANIMATION LOOP (plus fluide)
+  ========================= */
+  function animate() {
+    // Lissage exponentiel (0.15 au lieu de 0.08 pour plus de réactivité)
+    currentX += (targetX - currentX) * 0.15;
+    currentY += (targetY - currentY) * 0.15;
 
-function goldSparkle(){
-  const s = document.createElement("div");
-  s.className = "sparkle-gold";
-  s.style.left = Math.random()*100 + "%";
-  s.style.top  = Math.random()*100 + "%";
-  card.appendChild(s);
-  setTimeout(()=>s.remove(),3000);
-}
+    // Applique la rotation à la carte
+    card.style.transform = `rotateX(${currentX}deg) rotateY(${currentY}deg)`;
 
-setInterval(sparkle,60);
-setInterval(goldSparkle,220);
+    // Effet sur la signature (plus prononcé)
+    signature.style.transform = `translateX(-50%) translateY(${currentY * 0.2}px) rotate(${currentY * 0.2}deg)`;
 
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  /* =========================
+     SPARKLES (réagissent au mouvement)
+  ========================= */
+  function createSparkle(isGold) {
+    const s = document.createElement("div");
+    s.className = isGold ? "sparkle-gold" : "sparkle";
+    s.style.left = Math.random() * 100 + "%";
+    s.style.top = Math.random() * 100 + "%";
+    card.appendChild(s);
+    setTimeout(() => s.remove(), isGold ? 3000 : 2500);
+  }
+
+  // Génère des pétilles en fonction du mouvement
+  setInterval(() => {
+    if (Math.abs(targetX) > 5 || Math.abs(targetY) > 5) {
+      createSparkle(Math.random() > 0.7); // 30% de chance d'avoir une pétille dorée
+    } else {
+      createSparkle(false);
+    }
+  }, 100); // Plus fréquent que avant (60ms → 100ms)
 </script>
-
 </body>
 </html>
