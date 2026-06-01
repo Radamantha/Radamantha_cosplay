@@ -14,10 +14,9 @@
     background: #0b0b0b;
     overflow: hidden;
     perspective: 1200px;
-    touch-action: none; /* Désactive le scroll accidentel */
+    touch-action: none;
   }
 
-  /* CARTE */
   .card {
     width: min(90vw, 420px);
     aspect-ratio: 340/440;
@@ -25,11 +24,10 @@
     border-radius: 22px;
     overflow: hidden;
     transform-style: preserve-3d;
-    transition: transform 0.1s ease-out; /* Fluidité */
-    box-shadow: 0 20px 40px rgba(255, 215, 0, 0.2); /* Lueur dorée subtile */
+    transition: transform 0.1s ease-out;
+    box-shadow: 0 20px 40px rgba(255, 215, 0, 0.2);
   }
 
-  /* PHOTO */
   .card-photo {
     width: 100%;
     height: 100%;
@@ -37,10 +35,9 @@
     display: block;
   }
 
-  /* SIGNATURE */
   .card-signature {
     position: absolute;
-    top: 300px;
+    bottom: 15%; /* 👈 FIX : Remplace top: 300px */
     left: 50%;
     transform: translateX(-50%);
     max-width: 300px;
@@ -50,7 +47,6 @@
     will-change: transform;
   }
 
-  /* FOIL (effet métallique) */
   .foil {
     position: absolute;
     inset: 0;
@@ -88,7 +84,6 @@
     100% { top: 120%; opacity: 0; }
   }
 
-  /* SPARKLES (pétilles) */
   .sparkle, .sparkle-gold {
     position: absolute;
     border-radius: 50%;
@@ -118,7 +113,6 @@
     100% { opacity: 0; transform: scale(0); }
   }
 
-  /* INDICATEUR GYROSCOPE (si inactif) */
   .gyro-hint {
     position: fixed;
     bottom: 20px;
@@ -163,7 +157,6 @@
   const signature = document.querySelector(".card-signature");
   const gyroHint = document.getElementById("gyroHint");
 
-  // Variables pour le gyroscope
   let targetX = 0;
   let targetY = 0;
   let currentX = 0;
@@ -171,23 +164,20 @@
   let isGyroActive = false;
   let gyroTimeout = null;
 
-  // Calibrage automatique (moyenne des premiers valeurs)
   let calibrateBeta = 0;
   let calibrateGamma = 0;
   let calibrationCount = 0;
   const CALIBRATION_SAMPLES = 10;
 
-  // Sensibilité (à ajuster selon tes préférences)
-  const SENSITIVITY = 40; // 25 → 40 (plus réactif)
-  const MAX_ROTATION = 30; // Limite la rotation à ±30°
+  const SENSITIVITY = 40;
+  const MAX_ROTATION = 30;
 
   /* =========================
-     GYROSCOPE (MOBILE) - OPTIMISÉ
+     GYROSCOPE (MOBILE) - CORRIGÉ
   ========================= */
   window.addEventListener("deviceorientation", (e) => {
     if (e.beta == null || e.gamma == null) return;
 
-    // Calibrage automatique (ignorer les 10 premières valeurs)
     if (calibrationCount < CALIBRATION_SAMPLES) {
       calibrateBeta += e.beta;
       calibrateGamma += e.gamma;
@@ -199,19 +189,17 @@
       return;
     }
 
-    // Correction des axes (beta = avant/arrière, gamma = gauche/droite)
-    const beta = e.beta - calibrateBeta;  // Inclinaison avant/arrière
-    const gamma = e.gamma - calibrateGamma; // Inclinaison gauche/droite
+    // 👈 FIX : Inversion des signes pour beta et gamma
+    const beta = e.beta - calibrateBeta;
+    const gamma = e.gamma - calibrateGamma;
 
-    // Normalisation et limitation
-    targetX = Math.max(-MAX_ROTATION, Math.min(MAX_ROTATION, (beta / 45) * SENSITIVITY));
-    targetY = Math.max(-MAX_ROTATION, Math.min(MAX_ROTATION, (gamma / 45) * SENSITIVITY));
+    targetX = Math.max(-MAX_ROTATION, Math.min(MAX_ROTATION, -(beta / 45) * SENSITIVITY)); // 👈 -beta
+    targetY = Math.max(-MAX_ROTATION, Math.min(MAX_ROTATION, (gamma / 45) * SENSITIVITY)); // 👈 gamma inchangé
 
     isGyroActive = true;
     clearTimeout(gyroTimeout);
     gyroHint.classList.remove("active");
 
-    // Réinitialise le timeout pour afficher le hint après 3s d'inactivité
     gyroTimeout = setTimeout(() => {
       if (isGyroActive) {
         gyroHint.classList.add("active");
@@ -229,7 +217,7 @@
       try {
         const res = await DeviceOrientationEvent.requestPermission();
         if (res === "granted") {
-          window.location.reload(); // Recharge pour activer le gyroscope
+          window.location.reload();
         }
       } catch (e) {
         console.error("Erreur permission gyroscope:", e);
@@ -257,17 +245,13 @@
   });
 
   /* =========================
-     ANIMATION LOOP (plus fluide)
+     ANIMATION LOOP
   ========================= */
   function animate() {
-    // Lissage exponentiel (0.15 au lieu de 0.08 pour plus de réactivité)
     currentX += (targetX - currentX) * 0.15;
     currentY += (targetY - currentY) * 0.15;
 
-    // Applique la rotation à la carte
     card.style.transform = `rotateX(${currentX}deg) rotateY(${currentY}deg)`;
-
-    // Effet sur la signature (plus prononcé)
     signature.style.transform = `translateX(-50%) translateY(${currentY * 0.2}px) rotate(${currentY * 0.2}deg)`;
 
     requestAnimationFrame(animate);
@@ -275,7 +259,7 @@
   animate();
 
   /* =========================
-     SPARKLES (réagissent au mouvement)
+     SPARKLES
   ========================= */
   function createSparkle(isGold) {
     const s = document.createElement("div");
@@ -286,14 +270,13 @@
     setTimeout(() => s.remove(), isGold ? 3000 : 2500);
   }
 
-  // Génère des pétilles en fonction du mouvement
   setInterval(() => {
     if (Math.abs(targetX) > 5 || Math.abs(targetY) > 5) {
-      createSparkle(Math.random() > 0.7); // 30% de chance d'avoir une pétille dorée
+      createSparkle(Math.random() > 0.7);
     } else {
       createSparkle(false);
     }
-  }, 100); // Plus fréquent que avant (60ms → 100ms)
+  }, 100);
 </script>
 </body>
 </html>
